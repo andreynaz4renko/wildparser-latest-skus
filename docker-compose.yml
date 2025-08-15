@@ -1,0 +1,9 @@
+services:
+  gift_skus:
+    build: .
+    container_name: gift-skis
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: ["python", "parser.py"]
+    restart: "no"

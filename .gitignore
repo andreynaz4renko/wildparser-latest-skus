@@ -1,0 +1,12 @@
+.idea
+dockercsv
+logs
+venv
+*.log
+*.ppk
+*.pem
+*.ps1
+.env
+*hosts
+*.zip
+/**/__pycache__
