@@ -49,6 +49,7 @@ _API_PRODUCTS = 'https://catalog.wb.ru/catalog/{shard}/v2/catalog?{query}&dest=-
 _API_BRAND_PRODUCTS = 'https://catalog.wb.ru/brands/v2/catalog?brand={brand_id}&dest=-1257786&page=1&sort=popular'
 _MENU_URL = 'https://static-basket-01.wbbasket.ru/vol0/data/main-menu-ru-ru-v3.json'
 
+MAX_PAGES = 100  # WB обычно не даёт больше ~100 страниц
 
 def print_stats(
         count: int,
@@ -541,7 +542,6 @@ def brands() -> list[dict]:
             catalogs_list.append(row)
     return catalogs_list
 
-
 def generate_pages_for_filter(
         catalog_filter: CatalogFilter,
         shard: str,
@@ -550,10 +550,22 @@ def generate_pages_for_filter(
         catalog_type: CatalogType,
         brand_id: str
 ) -> str:
-    for page in range(1, catalog_filter.total_pages + 1):
-        min_price = catalog_filter.min_price
-        max_price = catalog_filter.max_price
-        yield api_products(page, shard, query, min_price, max_price, xsubject, catalog_type, brand_id)
+    """
+    Генерирует URL'ы страниц для каталога, но не более MAX_PAGES.
+    """
+    # безопасный предел страниц
+    try:
+        total = int(catalog_filter.total_pages)
+    except Exception:
+        total = 0
+
+    safe_pages = min(total, MAX_PAGES)
+    if safe_pages <= 0:
+        return
+
+    for page in range(1, safe_pages + 1):
+        yield api_products(page, shard, query, catalog_filter.min_price, catalog_filter.max_price, xsubject, catalog_type, brand_id)
+
 
 
 def _remove_childs(obj):
